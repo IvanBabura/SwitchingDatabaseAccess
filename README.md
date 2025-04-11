@@ -3,6 +3,9 @@
 ____
 
 ## 1 Краткое описание
+
+![Example](https://github.com/user-attachments/assets/f9412aea-124a-4157-b52a-e37e1b708f47)
+
 Сервис, который использует разные реализации доступа к базе данных:
 - Native JDBC;
 - JPA (Hibernate);
