@@ -1,0 +1,152 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+    <title>Switching DB accesses</title>
+</head>
+<body>
+<div>
+    <H1>Service of testing switching different Database accesses.</H1>
+    <div class="getStyle">
+        <p>Hello, my friend!</p>
+    </div>
+    <form>
+        <fieldset>
+            <legend>Please select your preferred method:</legend>
+            <div>
+                <form>
+                    <input type="checkbox" id="checkbox_remove_results" name="remove" checked>
+                    <label for="checkbox_remove_results">Remove results after change type</label>
+                </form>
+            </div>
+            <div>
+                <p><input name="sdba_rbt" type="radio" id="jdbc" value="JDBC" checked/>
+                    <label for="jdbc">JDBC</label></p>
+                <p><input name="sdba_rbt" type="radio" id="jpa" value="JPA"/>
+                    <label for="jpa">JPA</label></p>
+                <p><input name="sdba_rbt" type="radio" id="hibernate" value="Hibernate"/>
+                    <label for="hibernate">Hibernate</label></p>
+                <p><input name="sdba_rbt" type="radio" id="springJdbc" value="SpringJDBC"/>
+                    <label for="springJdbc">Spring JDBC</label></p>
+            </div>
+        </fieldset>
+    </form>
+    <br>
+    <div>
+        <label for="selected_rbt_result">Now checked:</label>
+        <label id="selected_rbt_result" class="selected_rbt_result" style="color:blue">JDBC</label>
+    </div>
+    <br>
+    <table class="CRUD table" style="border-collapse: collapse; border-left: white; border-right: white" border="1">
+        <tbody>
+        <tr>
+            <td><strong>Operation</strong></td>
+            <td><strong>Value</strong></td>
+            <td><strong>Button</strong></td>
+            <td><strong>Result</strong></td>
+        </tr>
+        <tr>
+            <td>Find by id:
+            </td>
+            <td>Person id:
+                <label>
+                    <input type="number" id="person_id_findById" name="id" width="43">
+                </label>
+            </td>
+            <td>
+                <button onclick="findById()">Find person by id</button>
+            </td>
+            <td><label class="result_findById" style="color:blue">...</label></td>
+        </tr>
+        <tr>
+            <td>Save:
+            </td>
+            <td>Person name:
+                <label>
+                    <input type="text" id="person_name_saveByName" name="name">
+                </label>
+            </td>
+            <td>
+                <button onclick="saveByName()">Save person by name</button>
+            </td>
+            <td><label class="result_saveByName" style="color:blue">...</label></td>
+        </tr>
+        <tr>
+            <td>Update:
+            </td>
+            <td>Person id:
+                <label>
+                    <input type="number" id="person_id_update" name="id">
+                </label>
+                <br>
+                Person name:
+                <label>
+                    <input type="text" id="person_name_update" name="name">
+                </label>
+            </td>
+            <td>
+                <button onclick="update()">Update person by name</button>
+            </td>
+            <td><label class="result_update" style="color:blue">...</label></td>
+        </tr>
+        <tr>
+            <td>Delete By Id:
+            </td>
+            <td>Person id:
+                <label>
+                    <input type="number" id="person_id_delete" name="id">
+                </label>
+            </td>
+            <td>
+                <button onclick="deleteById()">Delete person</button>
+            </td>
+            <td>
+                <label class="result_delete" style="color:blue">...</label>
+            </td>
+        </tr>
+        <tr>
+            <td>Get All:
+            </td>
+            <td>Just click it >>>
+            </td>
+            <td>
+                <button onclick="getAll()">Get all</button>
+            </td>
+            <td><label class="result_getAll" style="color:blue">... </label></td>
+        </tr>
+        <tr>
+            <td>Get starts with:
+            </td>
+            <td>Start of name:
+                <label>
+                    <input type="text" id="person_startOfName" name="name">
+                </label>
+            </td>
+            <td>
+                <button onclick="getAllLikeTemplate()">Search</button>
+            </td>
+            <td>
+                <label class="result_startOfName" style="color:blue">...</label>
+            </td>
+        </tr>
+        <tr>
+            <td>Get names starts with:
+            </td>
+            <td>Start of name:
+                <label>
+                    <input type="text" id="person_startOfNameOnly" name="name">
+                </label>
+            </td>
+            <td>
+                <button onclick="getAllNamesStartsWith()">Search</button>
+            </td>
+            <td>
+                <label class="result_startOfNameOnly" style="color:blue">...</label>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+<script src="crudScripts.js"></script>
+</body>
+</html>
+

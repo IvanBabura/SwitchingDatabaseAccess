@@ -1,0 +1,128 @@
+package io.github.ivanbabura;
+
+import io.github.ivanbabura.configs.DatabaseProperties;
+import io.github.ivanbabura.configs.SpringConfigData;
+import io.github.ivanbabura.entities.Person;
+import io.github.ivanbabura.repositories.*;
+import io.github.ivanbabura.services.PersonService;
+import io.github.ivanbabura.services.PersonServiceImpl;
+import io.github.ivanbabura.services.PersonServicesEnum;
+import io.github.ivanbabura.services.PersonServicesStorage;
+import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.Persistence;
+import org.hibernate.SessionFactory;
+import org.hibernate.boot.Metadata;
+import org.hibernate.boot.MetadataSources;
+import org.hibernate.boot.registry.StandardServiceRegistry;
+import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+
+/**
+* Это "резервная копия" main'а, которую я удалил, тк проект запускается через Tomcat.
+* Примеры запуска из main (не через tomcat). Оставил на всякий случай.
+* Чтобы оно нормально работало, необходимо (насколько я помню) из "SpringConfigMVC" удалить/закомментить аннотацию "@EnableWebMvc".
+*
+* И добавить в pom.xml зависимость:
+*    <dependency>
+*      <groupId>org.springframework</groupId>
+*      <artifactId>spring-context</artifactId>
+*      <version>${spring.version}</version>
+*    </dependency>*
+*
+*
+*
+*/
+
+public class Main {
+    public static void main(String[] args) {
+        System.out.println("Hello world!");
+        AnnotationConfigApplicationContext context =
+                new AnnotationConfigApplicationContext(SpringConfigData.class);
+
+        PersonServicesStorage p = context.getBean("personServicesStorage", PersonServicesStorage.class);
+        
+        //Проверка переключения типов
+        System.out.println("Selected " + p.getTypeOfService().getName());
+        Person person = p.getSelectedService().findById(1);
+        System.out.println(person);
+        p.setTypeOfService(PersonServicesEnum.HIBERNATE);
+        System.out.println("Selected " + p.getTypeOfService().getName());
+        
+        //findByIdWithJDBC(1);
+        //findByIdWithJPA(1);
+        //findByIdWithHibernate(1);
+        //findByIdWithSpringJdbc(1);
+
+    }
+
+    static void findByIdWithJDBC(int id) {
+        DatabaseProperties databaseProperties = new DatabaseProperties();
+        databaseProperties.loadFromResourceFile();
+        try (Connection connection = DriverManager.getConnection(
+                databaseProperties.getProperty("url"),
+                databaseProperties.getProperty("username"),
+                databaseProperties.getProperty("password"))) {
+            PersonServiceImpl ps = new PersonServiceImpl(new PersonRepositoryJdbcImpl(connection));
+            System.out.println(ps.findById(id));
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    static void findByIdWithJPA(int id) {
+        try (EntityManagerFactory emf = Persistence.createEntityManagerFactory("myPersistenceUnit")) {
+            PersonServiceImpl ps = new PersonServiceImpl(new PersonRepositoryJpaImpl(emf));
+            System.out.println(ps.findById(id));
+        }
+    }
+
+    static void findByIdWithHibernate(int id) {
+        //В hibernate.cfg.xml нельзя напрямую передать данные в Driver, приходится вот так:
+        DatabaseProperties databaseProperties = new DatabaseProperties();
+        databaseProperties.loadFromResourceFile();
+        DatabaseProperties hibernatDatabaseProperties = databaseProperties.getConvertedToHibernate();
+        StandardServiceRegistry standardServiceRegistry = new StandardServiceRegistryBuilder()
+                .configure("hibernate/hibernate.cfg.xml")
+                .applySettings(hibernatDatabaseProperties)
+                .build();
+        Metadata metadata = new MetadataSources(standardServiceRegistry)
+                .addAnnotatedClass(Person.class)
+                .addAnnotatedClassName("io.github.ivanbabura.entities.Person")
+                .addResource("hibernate/Person.hbn.xml")
+                .getMetadataBuilder()
+                /*
+                .applyImplicitNamingStrategy(ImplicitNamingStrategyJpaCompliantImpl.INSTANCE)
+                */
+                .build();
+        SessionFactory sessionFactory = metadata.getSessionFactoryBuilder()
+                //.applyBeanManager(getBeanManagerFromSomewhere() )
+                .build();
+        PersonService ps = new PersonServiceImpl(new PersonRepositoryHibernateImpl(sessionFactory));
+        System.out.println(ps.findById(id));
+        sessionFactory.close();
+        standardServiceRegistry.close();
+    }
+
+    static void findByIdWithSpringJdbc(int id) {
+        AnnotationConfigApplicationContext context =
+                new AnnotationConfigApplicationContext(SpringConfigData.class);
+
+        PersonService ps = context.getBean("personServiceJdbc", PersonServiceImpl.class);
+        System.out.println(ps.findById(id) + "\n");
+
+        ps = context.getBean("personServiceJpa", PersonServiceImpl.class);
+        System.out.println(ps.findById(id) + "\n");
+
+        ps = context.getBean("personServiceHibernate", PersonServiceImpl.class);
+        System.out.println(ps.findById(id) + "\n");
+
+        ps = context.getBean("personServiceSpringJdbc", PersonServiceImpl.class);
+        System.out.println(ps.findById(id) + "\n");
+
+        context.close();
+    }
+}
